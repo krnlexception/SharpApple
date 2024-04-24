@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <RootNamespace>SharpApple</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>SharpApple</AssemblyName>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>12</LangVersion>
+        <Authors />
+        <Company>nolemretaW</Company>
+        <AssemblyVersion>1.0</AssemblyVersion>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+      <PackageReference Include="Chroma" Version="0.62.1" />
+      <PackageReference Include="Chroma.Commander" Version="1.0.1" />
+      <PackageReference Include="Chroma.FlexTerm" Version="6.2.0" />
+      <PackageReference Include="Chroma.SabreVGA" Version="14.0.0" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <None Update="6502.dll">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="resources\PxPlus_IBM_VGA_9x16.ttf">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="resources\StartupAppleII.wav">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="apple1.rom">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="basic.rom">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\win-x64\native\nfd.exp">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\osx-x64\native\libnfd.dylib">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\win-x86\native\nfd.lib">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\win-x86\native\nfd.dll">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\win-x64\native\nfd.dll">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\win-x86\native\nfd.exp">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\win-x64\native\nfd.lib">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\win-x64\native\nfd.pdb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\win-x86\native\nfd.pdb">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="runtimes\linux-x64\native\libnfd.so">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>
