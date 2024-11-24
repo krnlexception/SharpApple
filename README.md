@@ -14,6 +14,7 @@ To reset emulated CPU, press 'Escape' while not in menu.
 ### Commandline args
 - `--ram`/`-r` - RAM to allocate to emulated computer. Has to be smaller than 53263.
 - `--width`/`-w` and `--height`/`-h` - Width and height of window.
+- `--debug` - Enables debug mode which displays program counter and last opcode.
 
 ## License stuff
 ### Libraries used
