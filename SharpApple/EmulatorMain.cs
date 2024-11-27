@@ -37,10 +37,6 @@ public class EmulatorMain : Game
     private string _inputBuffer;
     private ushort _startAddress;
 
-    private static Version? _version = Assembly.GetExecutingAssembly().GetName().Version;
-    private static DateTime _buildDate = new DateTime(2000, 1, 1)
-        .AddDays(_version.Build).AddSeconds(_version.Revision * 2);
-
     #region Important stuff
 
     public EmulatorMain()
@@ -135,47 +131,47 @@ public class EmulatorMain : Game
     {
         context.RenderTo(_target, (ctx, _) =>
         {
-            context.Clear(Color.Black);
+            ctx.Clear(Color.Black);
 
-            Screen.Draw(context);
+            Screen.Draw(ctx);
 
             if (_debug)
             {
-                context.DrawString(_ttf, $" (PC: {_cpu.PC.ToString("X2")}, opcode: {_cpu.Opcode.ToString("X2")})", 0, 0, Color.Lime);
+                ctx.DrawString(_ttf, $" (PC: {_cpu.PC.ToString("X2")}, opcode: {_cpu.Opcode.ToString("X2")})", 0, 0, Color.Lime);
             }
 
             if (_isInMenu)
             {
-                context.Rectangle(ShapeMode.Fill, 0, 0, 360, 232, new Color(0, 0, 0, 1));
+                ctx.Rectangle(ShapeMode.Fill, 0, 0, 360, 232, new Color(0, 0, 0, 1));
                 switch (_submenu)
                 {
                     case SubMenus.None:
-                        context.DrawString(_ttf, $"Menu", 30, 30, Color.Lime);
-                        context.DrawString(_ttf, _menuSelection == 0 ? "> Load into RAM" : "Load into RAM", 30, 46, Color.Lime);
-                        context.DrawString(_ttf, _menuSelection == 1 ? "> Save from RAM" : "Save from RAM", 30, 54, Color.Lime);
-                        context.DrawString(_ttf, _menuSelection == 2 ? "> About" : "About", 30, 62, Color.Lime);
+                        ctx.DrawString(_ttf, $"Menu", 30, 30, Color.Lime);
+                        ctx.DrawString(_ttf, _menuSelection == 0 ? "> Load into RAM" : "Load into RAM", 30, 46, Color.Lime);
+                        ctx.DrawString(_ttf, _menuSelection == 1 ? "> Save from RAM" : "Save from RAM", 30, 54, Color.Lime);
+                        ctx.DrawString(_ttf, _menuSelection == 2 ? "> About" : "About", 30, 62, Color.Lime);
                         break;
                     case SubMenus.Addr:
-                        context.DrawString(_ttf, "Address to load into:", 30, 30, Color.Lime);
-                        context.DrawString(_ttf, _inputBuffer, 30, 38, Color.Lime);
+                        ctx.DrawString(_ttf, "Address to load into:", 30, 30, Color.Lime);
+                        ctx.DrawString(_ttf, _inputBuffer, 30, 38, Color.Lime);
                         break;
                     case SubMenus.AddrStart:
-                        context.DrawString(_ttf, "Starting address:", 30, 30, Color.Lime);
-                        context.DrawString(_ttf, _inputBuffer, 30, 38, Color.Lime);
+                        ctx.DrawString(_ttf, "Starting address:", 30, 30, Color.Lime);
+                        ctx.DrawString(_ttf, _inputBuffer, 30, 38, Color.Lime);
                         break;
                     case SubMenus.AddrEnd:
-                        context.DrawString(_ttf, "Ending address:", 30, 30, Color.Lime);
-                        context.DrawString(_ttf, _inputBuffer, 30, 38, Color.Lime);
+                        ctx.DrawString(_ttf, "Ending address:", 30, 30, Color.Lime);
+                        ctx.DrawString(_ttf, _inputBuffer, 30, 38, Color.Lime);
                         break;
                     case SubMenus.About:
-                        context.DrawString(_ttf, "SharpApple - Apple 1 emulator\n\n" +
-                                                 $"Version {Assembly.GetExecutingAssembly().GetName().Version.ToString(3)}\n"+
-                                                 "Written in C#\n" +
-                                                 "and using Chroma Framework\n" +
-                                                 "(c) 2024 krnlException\n\n" +
-                                                 "Thanks to:\n" +
-                                                 "  vddCore - For Chroma Framework\n" +
-                                                 "  Omnicrash - For 6502 emulator", 30, 30, Color.Lime);
+                        ctx.DrawString(_ttf, "SharpApple - Apple 1 emulator\n\n" +
+                                             $"Version {Assembly.GetExecutingAssembly().GetName().Version.ToString(3)}\n"+
+                                             "Written in C#\n" +
+                                             "and using Chroma Framework\n" +
+                                             "(c) 2024 krnlException\n\n" +
+                                             "Thanks to:\n" +
+                                             "  vddCore - For Chroma Framework\n" +
+                                             "  Omnicrash - For 6502 emulator", 30, 30, Color.Lime);
                         break;
                 }
             }
@@ -323,25 +319,92 @@ public class EmulatorMain : Game
     {
         if (_submenu == SubMenus.Addr)
         {
-            _readingInput = false;
-            ushort address = Convert.ToUInt16(_inputBuffer, 16);
+            ushort address;
+            try
+            {
+                address = Convert.ToUInt16(_inputBuffer, 16);
+            }
+            catch (Exception e) when (e is ArgumentOutOfRangeException || e is FormatException || e is OverflowException)
+            {
+                Log.Error("Invalid number");
+                _inputBuffer = "";
+                return;
+            }
+
+            if (address > _mem.RamSize || address < 0)
+            {
+                Log.Error("Address out of range");
+                _inputBuffer = "";
+                return;
+            }
             DialogResult file = Dialog.FileOpen();
+
+            if (file.Path == null)
+            {
+                Log.Error("File not chosen");
+                _inputBuffer = "";
+                _submenu = SubMenus.None;
+                return;
+            }
+
             byte[] binFile = File.ReadAllBytes(file.Path);
+
+            if (binFile.Length == 0)
+            {
+                Log.Error("File is empty");
+                _inputBuffer = "";
+                _submenu = SubMenus.None;
+                return;
+            }
+
+            if (address + binFile.Length > _mem.RamSize)
+            {
+                Log.Error("File too large");
+                _inputBuffer = "";
+                _submenu = SubMenus.None;
+                return;
+            }
+
             Array.Copy(binFile, 0, _mem.Ram, address, binFile.Length);
             _submenu = SubMenus.None;
+            _readingInput = false;
         } else if (_submenu == SubMenus.AddrStart)
         {
-            _startAddress = Convert.ToUInt16(_inputBuffer, 16);
+            try
+            {
+                _startAddress = Convert.ToUInt16(_inputBuffer, 16);
+            }
+            catch (Exception e) when (e is ArgumentOutOfRangeException || e is FormatException || e is OverflowException)
+            {
+                Log.Error("Invalid number");
+                _inputBuffer = "";
+                return;
+            }
             _submenu = SubMenus.AddrEnd;
         } else if (_submenu == SubMenus.AddrEnd)
         {
             DialogResult file = Dialog.FileSave();
-            _readingInput = false;
-            ushort addrEnd = Convert.ToUInt16(_inputBuffer, 16);
+            ushort addrEnd;
+            try
+            {
+                addrEnd = Convert.ToUInt16(_inputBuffer, 16);
+            }
+            catch (Exception e) when (e is ArgumentOutOfRangeException || e is FormatException || e is OverflowException)
+            {
+                Log.Error("Invalid number");
+                _inputBuffer = "";
+                return;
+            }
             byte[] region = new byte[addrEnd - _startAddress + 1];
-            Array.Copy(_mem.Ram, _startAddress, region, 0, addrEnd - _startAddress + 1);
-            File.WriteAllBytes(file.Path, region);
+
+            if (region.Length > 0)
+            {
+                Buffer.BlockCopy(_mem.Ram, _startAddress, region, 0, addrEnd - _startAddress + 1);
+                File.WriteAllBytes(file.Path, region);
+            }
+
             _submenu = SubMenus.None;
+            _readingInput = false;
             _startAddress = 0;
         } else if (_submenu == SubMenus.About)
         {
