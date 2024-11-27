@@ -1,5 +1,7 @@
 # SharpApple
 
+<img src="https://raw.githubusercontent.com/krnlexception/SharpApple/refs/heads/main/.github/mainwindow.png" width="640" alt="Screenshot of a main window of SharpAppe emulator">
+
 Not quick, but definitely dirty emulator of Apple 1 computer written in C#
 
 Powered by [Chroma Framework](https://github.com/Chroma-2D/Chroma/)
